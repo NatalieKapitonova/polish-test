@@ -1,0 +1,26 @@
+name: Deployment
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: env var
+        run: |
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "GITHUB_SHA_SHORT: $GITHUB_SHA_SHORT"
+          echo "VERSION: ${GITHUB_REF##*/}"
+      - name: Install Packages
+        run: npm install
+      - name: Build page
+        run: VITE_GIT_SHA=$GITHUB_SHA VITE_VERSION=${GITHUB_REF##*/} VITE_BASE=/polish-test yarn build
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          publish_dir: ./dist
